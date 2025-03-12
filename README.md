@@ -15,6 +15,17 @@
 
 ## パッケージの使い方
 
+### Typst Universeを使用する方法
+
+1. 自分のtypstファイルの最初の方に以下を追記
+    ```typst
+    #import "@preview/enja-bib:0.1.0": *
+    #import bib_setting_plain: *
+    #show: bib_init
+    ```
+
+### フォルダを直接コピーする方法
+
 1. `bib_style`フォルダを自分のディレクトリにコピー
 1. 自分のtypstファイルの最初の方に以下を追記
     ```typst
@@ -46,6 +57,8 @@
 ### `bib-tex`関数
 
 この中にBibTeXを入れる
+
+> この方法は推奨されません．代わりに`bib-file`関数を利用する方が便利です．
 
 例：
 ```typst

@@ -1,0 +1,11 @@
+[package]
+name = "enja-bib"
+version = "0.1.0"
+entrypoint = "src/lib.typ"
+authors = ["T. Hashimoto"]
+license = "MIT"
+description = "A package for handling BibTeX that includes both English and Japanese."
+
+repository = "https://github.com/tkrhsmt/typst-BibTeX-jp"
+keywords = ["bibliography", "japanese"]
+exclude = ["example/"]
