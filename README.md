@@ -37,41 +37,48 @@
 
 ### `bibliography-list`関数
 
-この関数の中に，`bib-tex`関数を入れる．
+この関数の中に，`bib-file`，または`bib-item`関数を入れる．
 それぞれの文献ごとにカンマで区切ること．
 
-任意引数
-- `lang` : 文献のheadingの言語（`"ja"`：日本語，`"en"`：英語，`none`：表示しない），デフォルトは日本語
-
-### `bib-tex`関数
-
-この中にBibTeXを入れる
-
-例：
 ```typst
 #bibliography-list(
-    bib-tex(`
-        @article{Reynolds:PhilTransRoySoc1883,
-            author  = {Reynolds, Osborne},
-            title   = {An experimental investigation of the circumstances which determine whether the motion of water shall be direct or sinuous, and of the law of resistance in parallel channels},
-            journal = {Philosophical Transactions of the Royal Society of London},
-            volume  = {174},
-            number  = {},
-            pages   = {935--982},
-            year    = {1883},
-            doi     = {10.1098/rstl.1883.0029},
-            url     = {https://royalsocietypublishing.org/doi/abs/10.1098/rstl.1883.0029}
-        }
-    `)
+  ..bib-file(read("mybib_jp.bib")),
+  bib-item(
+    label: <Reynolds:PhilTransRoySoc1883>,
+    author: "Reynolds",
+    year: "1883",
+    yomi: "reynolds, o.",
+    (
+        [Reynolds, O., An experimental investigation of the circumstances which determine whether the motion of water shall be direct or sinuous, and of the law of resistance in parallel channels, Philosophical Transactions of the Royal Society of London (1883],
+        [), Vol. 174, pp. 935–982]
+    )
+  ),
+  //...複数の項目を追加可能
 )
 ```
 
 任意引数
-- `lang` : 文献の言語（`"ja"`：日本語，`"en"`：英語，`auto`：自動判別），デフォルトは`auto`
+- `title` : 文献タイトル（デフォルト：`文　　献`）
+
+
+### `bib-file`関数
+
+`.bib`形式のファイルを読み込む
+
+例：
+```typst
+#bibliography-list(
+  ..bib-file(read("mybib_jp.bib")),
+)
+```
+
+`bib-file`関数には，`read`で囲われた`.bib`ファイル名を入れる
+
+> `bib_file`関数は複数文献の配列として返すため，`..`の記述が**必須**であることに注意
 
 ### `bib-item`関数
 
-`bib-tex`関数の代わりに，文献を直書きする
+`bib-file`関数の代わりに，文献を直書きする
 
 例：
 ```typst
@@ -93,46 +100,27 @@ bib-item(
 - `year` : 年（引用時・重複判別に用いられる）
 - `yomi` : 読み（並び替えに用いられる）
 
-### `bib-file`関数
-
-`.bib`形式のファイルを読み込む
-
-例：
-```typst
-#bibliography-list(
-  ..bib-file(read("mybib_jp.bib")),
-)
-```
-
-> `bib_file`関数は`bib-tex`関数の配列として返すため，`..`の記述が必須であることに注意
-
-### `citet`，`citep`，`citen`関数
+### `citet`，`citep`，`citen`, `citefull`関数
 
 文中で引用するときに使用する関数．`@...`のように書いても引用できるが，
 ```typst
     #citet(<Reynolds:PhilTransRoySoc1883>)
 ```
 のように書くことで引用も可能．
-それぞれの関数は，複数の文献入力にも対応（例：`#citet(<Reynolds:PhilTransRoySoc1883>, <Matsukawa:ICFD2022>)`
+それぞれの関数は，複数の文献入力にも対応（例：`#citet(<Reynolds:PhilTransRoySoc1883>, <Matsukawa:ICFD2022>)`）
 
-### `citefull`形式
-
-文中で`citefull`形式を読み込むには
-```typst
-    @Reynolds:PhilTransRoySoc1883[full]
-```
-と書く
+異なる引用形式が必要な場合には，下記の方法に従って新たに設定が可能
 
 ---
 
 ## 独自のスタイルを適用する方法
 
-`bib_setting_plain`や`bib_setting_jsme`以外の独自のスタイルを設定する，或いは一部を変更するには新たに関数を設定します
+`bib_setting_plain`や`bib_setting_jsme`以外の独自のスタイルを設定，或いは一部を変更するには，それぞれの関数に引数を設定します．
 
 ### 全体設定
 
 ```typst
-#let bibliography-list(..body) = bib_style.bibliography-list(
+#bibliography-list(
   year-doubling,
   bib-sort,
   bib-sort-ref,
@@ -141,7 +129,7 @@ bib-item(
   vancouver_style,
   bib-year-doubling,
   bib-vancouver-manual,
-  ..body
+  ...
 )
 ```
 
@@ -157,12 +145,8 @@ bib-item(
 ### 参照設定
 
 ```typst
-#let bib_init(body) = bib_style.bib_init(
-  bib-cite,
-  bib-citet,
-  bib-citep,
-  bib-citen,
-  body
+#bib_init(
+  bib-cite
 )
 ```
 
@@ -181,9 +165,12 @@ bib-item(
   > 上の例では，`Reynolds (1883); Reynolds (1883)`のように出力されます
 
   2番目の要素である`function`型には，
-  - `bib-citet-default`
-  - `bib-citep-default`
-  - `bib-citen-default`
+  - `bib-citet-default`：文中引用形式
+  - `bib-citep-default`：文末引用形式
+  - `bib-citen-default`：番号引用形式
+  - `bib-citefull-default`：文献スタイルで引用する形式
+  - `bib-cite-authoronly`：著者名のみ引用する形式
+  - `bib-cite-yearonly`：年のみ引用する形式
 
   が選択できますが，以下のように独自に設定が可能です．
   以下は，`bib-citet-default`の例です．
@@ -196,50 +183,22 @@ bib-item(
 
   **引数**
   1. `bib_cite_contents`：`cite`を構成する要素．
-     (著者名, 年号, 引用番号)が入っている
+     (`著者名`, `年号`, `引用番号`, `文献`)が入っている
 
-- `bib-citet`, `bib-citep`, `bib-citen`についても，`bib-cite`と同様
+### `cite`系関数
 
-### `citet`関数
+デフォルトで使用できる引用スタイルは，`citet`，`citep`，`citen`，`citefull`です．
+これらを書き換えるには，以下の引数を設定します．
 
 ```typst
-#let citet(..label_argument) = bib_style.bib-cite-func(
+#citet(
   bib-citet,
-  "citet",
-  ..label_argument
 )
 ```
 
-- `bib-citet`：参照設定における`bib-cite`と同様(`function`型)
-- `"citet"`：**これは変更しないでください**
+- `bib-citet`：上記の`bib-cite`と同様
 
-### `citep`関数
-
-```typst
-#let citep(..label_argument) = bib_style.bib-cite-func(
-  bib-citep,
-  "citep",
-  ..label_argument
-)
-```
-
-- `bib-citep`：参照設定における`bib-cite`と同様(`function`型)
-- `"citep"`：**これは変更しないでください**
-
-### `citen`関数
-
-```typst
-#let citen(..label_argument) = bib_style.bib-cite-func(
-  bib-citen,
-  "citen",
-  ..label_argument
-)
-```
-
-- `bib-citen`：参照設定における`bib-cite`と同様(`function`型)
-- `"citen"`：**これは変更しないでください**
-
-### `bibtex`の設定
+### `bib-file`の設定
 
 
 ```typst
@@ -324,43 +283,26 @@ bib-item(
 
 - `bib-cite-year`：`cite`の`year`を返す関数（`function`型）
 
-`bib-tex`も同様に設定する
-
-```typst
-#let bib-tex(..body) = bib_style.bib-tex(
-  year-doubling,
-  bibtex-article-en,
-  bibtex-article-ja,
-  bibtex-book-en,
-  bibtex-book-ja,
-  bibtex-booklet-en,
-  bibtex-booklet-ja,
-  bibtex-inbook-en,
-  bibtex-inbook-ja,
-  bibtex-incollection-en,
-  bibtex-incollection-ja,
-  bibtex-inproceedings-en,
-  bibtex-inproceedings-ja,
-  bibtex-conference-en,
-  bibtex-conference-ja,
-  bibtex-manual-en,
-  bibtex-manual-ja,
-  bibtex-mastersthesis-en,
-  bibtex-mastersthesis-ja,
-  bibtex-misc-en,
-  bibtex-misc-ja,
-  bibtex-online-en,
-  bibtex-online-ja,
-  bibtex-phdthesis-en,
-  bibtex-phdthesis-ja,
-  bibtex-proceedings-en,
-  bibtex-proceedings-ja,
-  bibtex-techreport-en,
-  bibtex-techreport-ja,
-  bibtex-unpublished-en,
-  bibtex-unpublished-ja,
-  bib-cite-author,
-  bib-cite-year,
-  ..body
-)
-```
+> それぞれの`function`型には，以下のものがすぐに使用できます．
+> - `all-return`：要素の全てを返す関数
+> - `all-bold`：要素を太字にして全て返す関数
+> - `all-emph`：要素を斜体にして全て返す関数
+> - `author-set`：項目を著者型にして返す関数 (例：英語著者名`Reynolds, Osborne` を `Reynolds O.` に変換)
+> - `author-set2`：項目を著者型にして返す関数 (例：英語著者名`Reynolds, Osborne` を `O Reynolds` に変換)
+> - `author-set3`：項目を著者型にして返す関数 (例：英語著者名`Reynolds, Osborne` を `Osborne Reynolds` に変換)
+> - `author-set-cite`：項目をciteの著者型にして返す関数 (例：英語著者名`Reynolds, Osborne` を `Reynolds` に変換)
+> - `title-en`：英語のタイトルを先頭だけ大文字にしてそれ以外を小文字にして返す関数
+> - `set-url`：URLを付与して返す関数（引数に`color`を設定可能．デフォルトは`blue`）
+> - `page-set`：ページ形式にして返す関数（`p.`や`pp.`をつける）
+> - `page-set-without-p`：ページ形式にして返す関数（`p.`や`pp.`をつけない）
+>
+> これらの関数は，独自に作ることもできます．例えば，`all-emph`関数は次のように実装されています．
+>
+> ```
+> #let all-emph(biblist, name) = {
+>   return emph(biblist.at(name).sum())
+> }
+> ```
+>
+> - `biblist`：`bibtex`形式の文献エントリーの`dictionary`型
+> - `name`：今呼ばれている文献エントリー名
